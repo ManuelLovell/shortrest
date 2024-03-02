@@ -1,6 +1,7 @@
 import './pause-style.css';
 import './blockrain/blockrain.css';
 import './blockrain/blockrain.jquery.js';
+import $ from "jquery";
 import OBR, { Player } from '@owlbear-rodeo/sdk';
 import { Constants } from './utilities/bsConstants.js';
 

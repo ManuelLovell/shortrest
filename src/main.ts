@@ -1,6 +1,7 @@
 import OBR from '@owlbear-rodeo/sdk';
 import './blockrain/blockrain.css';
 import './blockrain/blockrain.jquery.js';
+import $ from "jquery";
 import './style.css'
 import * as Utilities from './utilities/bsUtilities';
 import { BSCACHE } from './utilities/bsSceneCache';
