@@ -4,7 +4,7 @@
   "version": "1.0",
   "author": "Battle-System",
   "manifest_version": 1,
-  "icon": "/logo.svg",
+  "icon": "/logo.png",
   "action": {
     "title": "Short Rest!",
     "icon": "/logo.svg",

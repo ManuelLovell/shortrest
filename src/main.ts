@@ -80,10 +80,13 @@ OBR.onReady(async () =>
         selfitem.onclick = async (e) =>
         {
             e.preventDefault();
-            SELFREADY = !SELFREADY;
-            selfitem.style.backgroundImage = SELFREADY ? 'url(/check.svg)' : 'url(/cross.svg)';
-            selfitem.innerText = SELFREADY ? "Click to un-ready" : "Click when ready!";
-            await OBR.broadcast.sendMessage(Constants.TRANSPORT, SELFREADY ? Constants.READY : Constants.BUSY);
+            if (PAUSED)
+            {
+                SELFREADY = !SELFREADY;
+                selfitem.style.backgroundImage = SELFREADY ? 'url(/check.svg)' : 'url(/cross.svg)';
+                selfitem.innerText = SELFREADY ? "Click to un-ready" : "Click when ready!";
+                await OBR.broadcast.sendMessage(Constants.TRANSPORT, SELFREADY ? Constants.READY : Constants.BUSY);
+            }
         }
 
         PAUSEBUTTON.innerHTML = PAUSED ? "Resume</br>Game" : "Pause</br>Game";
@@ -94,10 +97,19 @@ OBR.onReady(async () =>
             {
                 item.style.backgroundImage = !PAUSED ? 'url(/check.svg)' : 'url(/cross.svg)';
             }
+            selfitem.innerText = "Click when ready!";
             HIDEVIEWBUTTON.disabled = PAUSED;
             GAMEVIEWBUTTON.disabled = PAUSED;
             BREAKLENGTHBUTTON.disabled = PAUSED;
             MESSAGETEXT.disabled = PAUSED;
+        }
+        else
+        {
+            const listItems = PLAYERLISTING.querySelectorAll<HTMLDivElement>('.player-score-item');
+            for (const item of listItems)
+            {
+                item.innerText = '';
+            }
         }
 
         PAUSEBUTTON.onclick = async (e) =>
@@ -118,10 +130,15 @@ OBR.onReady(async () =>
             OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: PAUSED ? true : false });
             if (PAUSED)
             {
+                selfitem.innerText = "Click when ready!";
                 setTimeout(async () =>
                 {
                     await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
                 }, 2000);
+            }
+            else
+            {
+                selfitem.innerText = "Self";
             }
             await StartGame();
         };
@@ -209,7 +226,7 @@ OBR.onReady(async () =>
                     const playeritem = document.createElement('li');
                     playeritem.id = `pl_${player.id}`;
                     playeritem.classList.add("player-list-item");
-                    playeritem.innerHTML = `${player.name} <div id="con_${player.connectionId}"></div>`;
+                    playeritem.innerHTML = `${player.name} <div class="player-score-item" id="con_${player.connectionId}"></div>`;
                     PLAYERLISTING.appendChild(playeritem);
                 }
             }
