@@ -22,7 +22,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <td>
                 <div class="wrapper">
                     <label for="breakLength">Break Timer (Mins):</label>
-                    <input type="number" id="breakLength" name="breakLength">
+                    <div id="timeWrapper">
+                        <input type="number" id="breakLength" name="breakLength" maxlength="2" min="0">
+                        <div id="breakTimer">--:--</div>
+                    </div>
                 </div>
             </td>
             <td>
@@ -45,10 +48,12 @@ const PAUSEBUTTON = document.getElementById('pauseButton') as HTMLButtonElement;
 const HIDEVIEWBUTTON = document.getElementById('hideViewButton') as HTMLButtonElement;
 const GAMEVIEWBUTTON = document.getElementById('gameViewButton') as HTMLButtonElement;
 const BREAKLENGTHBUTTON = document.getElementById('breakLength') as HTMLInputElement;
+const BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
 const MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
 const BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
 
 let SELFREADY = false;
+let timerId: number;
 
 OBR.onReady(async () =>
 {
@@ -92,6 +97,16 @@ OBR.onReady(async () =>
         PAUSEBUTTON.innerHTML = PAUSED ? "Resume</br>Game" : "Pause</br>Game";
         if (PAUSED)
         {
+            const timer = parseInt(BREAKLENGTHBUTTON.value);
+            if (timer > 0)
+            {
+                startCountdown(timer);
+            }
+            else
+            {
+                BREAKTIMER.innerText = "--:--";
+            }
+
             const listItems = PLAYERLISTING.querySelectorAll('li');
             for (const item of listItems)
             {
@@ -130,6 +145,15 @@ OBR.onReady(async () =>
             OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: PAUSED ? true : false });
             if (PAUSED)
             {
+                const timer = parseInt(BREAKLENGTHBUTTON.value);
+                if (timer > 0)
+                {
+                    startCountdown(timer);
+                }
+                else
+                {
+                    BREAKTIMER.innerText = "--:--";
+                }
                 selfitem.innerText = "Click when ready!";
                 setTimeout(async () =>
                 {
@@ -138,6 +162,8 @@ OBR.onReady(async () =>
             }
             else
             {
+                BREAKTIMER.innerText = "--:--";
+                clearInterval(timerId);
                 selfitem.innerText = "Self";
             }
             await StartGame();
@@ -163,6 +189,10 @@ OBR.onReady(async () =>
             OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/game`]: GAME ? true : false });
         };
 
+        BREAKLENGTHBUTTON.oninput = async () =>
+        {
+            BREAKLENGTHBUTTON.value = BREAKLENGTHBUTTON.value.slice(0, 2);
+        };
         BREAKLENGTHBUTTON.onblur = async () =>
         {
             const time = BREAKLENGTHBUTTON.value ?? 0;
@@ -230,6 +260,43 @@ OBR.onReady(async () =>
                     PLAYERLISTING.appendChild(playeritem);
                 }
             }
+        }
+
+        function startCountdown(minutes: number)
+        {
+            // Calculate total seconds from minutes
+            let totalSeconds = minutes * 60;
+
+            // Update timer initially
+            updateTimer(totalSeconds);
+
+            // Update timer every second
+            timerId = setInterval(() =>
+            {
+                totalSeconds--;
+                if (totalSeconds <= 0)
+                {
+                    clearInterval(timerId);
+                    BREAKTIMER.innerText = 'Time is up!';
+                } else
+                {
+                    updateTimer(totalSeconds);
+                }
+            }, 1000);
+        }
+
+        // Function to update the timer display
+        function updateTimer(totalSeconds: number)
+        {
+            // Calculate minutes and seconds
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+
+            // Format the time as "MM:SS"
+            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            // Update the timer display
+            BREAKTIMER.innerText = formattedTime;
         }
 
         async function StartGame()
