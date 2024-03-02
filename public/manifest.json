@@ -1,0 +1,15 @@
+{
+  "name": "Short Rest!",
+  "description": "Blah blah blah sleep sleep sleep",
+  "version": "1.0",
+  "author": "Battle-System",
+  "manifest_version": 1,
+  "icon": "/logo.svg",
+  "action": {
+    "title": "Short Rest!",
+    "icon": "/logo.svg",
+    "popover": "/",
+    "height": 420,
+    "width": 300
+  }
+}

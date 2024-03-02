@@ -1,0 +1,165 @@
+:root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: inherit;
+    color: var(--OBR-font);
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+
+    --OBR-font: white;
+    --OBR-font-transparent: rgba(255, 255, 255, 0.493);
+    --OBR-offset-foreground: rgb(230, 230, 238);
+    --OBR-offset-background: rgb(49, 49, 65);
+    --OBR-light-blue: rgb(60, 62, 75);
+    --OBR-light-blue-transparent: rgb(60, 62, 75, 0.5);
+    --OBR-dark-blue: rgb(30, 34, 49);
+    --OBR-dark-blue-transparent: rgba(30, 34, 49, 0.75);
+    --OBR-Purple-Select: rgb(187, 153, 255);
+    --OBR-Purple-Select-Transparent: rgb(187, 153, 255, 0.5);
+    --OBR-soft-outline: rgb(65, 65, 65);
+
+    --invert: none;
+    --invert-click: invert(52%) sepia(81%) saturate(5333%) hue-rotate(331deg) brightness(90%) contrast(88%);
+    --slider-color: #ccc;
+    --tooltip-background: none;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --OBR-font: rgb(49, 49, 49);
+        --OBR-soft-outline: rgb(196, 196, 196);
+        --OBR-offset-fore: rgb(44, 44, 46);
+        --OBR-offset-back: rgb(210, 210, 223);
+        --OBR-dark-blue-transparent: rgba(194, 195, 199, 0.5);
+        --OBR-offset-background: rgb(117, 117, 117);
+        --OBR-dark-blue: rgb(209, 210, 217);
+        --OBR-light-blue: rgb(231, 233, 238);
+
+        --invert: invert(.65);
+        --invert-click: none;
+        --tooltip-background: rgb(161, 161, 161);
+    }
+}
+
+.header {
+    text-align: center;
+    font-weight: bold;
+    font-size: x-large;
+    color: var(--OBR-font);
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+}
+
+.break-message {
+    text-align: center;
+    max-width: 40%;
+    border-color: var(--OBR-font);
+    border-width: 2px;
+    border-radius: 6px;
+    border-style: solid;
+    padding: 12px;
+    background-color: var(--OBR-dark-blue-transparent);
+}
+
+body {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    position: absolute;
+}
+
+#pauseScreen {
+    height: 100%;
+    width: 100%;
+}
+
+#gameFlexBox {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    z-index: 999;
+    /* Adjust the z-index as needed */
+}
+
+.block-game {
+    height: 50%;
+    width: 100%;
+    max-width: 300px;
+    max-height: 500px;
+    border-color: var(--OBR-font);
+    padding: 4px;
+    border-width: 2px;
+    border-style: solid;
+}
+
+#attendanceBox {
+    padding: 4px;
+}
+
+#playerList {
+    list-style: none;
+    padding-left: 0;
+}
+
+#playerList li {
+    color: var(--OBR-font);
+    font-size: 20px;
+    padding-left: 44px;
+    padding-right: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    margin: 6px;
+    background: url('/cross.svg') no-repeat left center;
+    background-size: 30px;
+    background-color: var(--OBR-dark-blue-transparent);
+    background-position-x: 6px;
+    border-radius: 16px;
+}
+
+.self-list-item {
+    cursor: pointer;
+    border-color: var(--OBR-Purple-Select);
+    border-width: 1px;
+    border-radius: 6px;
+    border-style: solid;
+}
+
+button {
+    cursor: pointer;
+    color: var(--OBR-font);
+    font-size: x-large;
+    padding: 10px 20px 10px 20px;
+    background-color: var(--OBR-dark-blue);
+    border-color: var(--OBR-font);
+    border-width: 1px;
+    border-radius: 6px;
+    border-style: solid;
+}
+
+#breakTimer {
+    font-family: monospace;
+    font-size: 36px;
+    color: var(--OBR-font);
+    text-align: center;
+    padding: 10px;
+}
