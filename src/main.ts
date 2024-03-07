@@ -60,10 +60,27 @@ OBR.onReady(async () =>
     await BSCACHE.InitializeCache();
     BSCACHE.SetupHandlers();
 
+    let PAUSED = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
+    let OBSCURE = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
+    let GAME = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/game`] as boolean ?? false;
+
     if (BSCACHE.playerRole === "PLAYER")
     {
         await OBR.action.setHeight(50);
         document.querySelector<HTMLDivElement>('#app')!.innerHTML = "<div class='header'>Enjoy your stay.</div>";;
+
+        if (PAUSED)
+        {
+            BSCACHE.paused = true;
+            await OBR.modal.open({
+                id: Constants.PAUSEID,
+                url: "/pausescreen.html",
+                fullScreen: true,
+                hideBackdrop: false,
+                hidePaper: !OBSCURE,
+                disablePointerEvents: false,
+            });
+        }
         return;
     }
     else
@@ -71,9 +88,6 @@ OBR.onReady(async () =>
         const whatsNewContainer = document.getElementById("whatsNew")!;
         whatsNewContainer.appendChild(Utilities.GetWhatsNewButton());
 
-        let PAUSED = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
-        let OBSCURE = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
-        let GAME = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/game`] as boolean ?? false;
         BREAKLENGTHBUTTON.value = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string ?? "0";
 
         const selfitem = document.createElement('li');

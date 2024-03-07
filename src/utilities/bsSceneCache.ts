@@ -269,24 +269,12 @@ class BSCache
 
     public async OnSceneMetadataChanges(_metadata: Metadata)
     {
-        if (this.playerRole === "GM")
-        {
-        }
-        else
-        {
-        }
     }
 
     public async OnSceneItemsChange(_items: Item[])
     {
         if (this.sceneReady)
         {
-            if (this.playerRole === "GM")
-            {
-            }
-            else
-            {
-            }
         }
     }
 

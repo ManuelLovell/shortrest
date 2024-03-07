@@ -8,6 +8,9 @@ const footer = document.querySelector<HTMLElement>('#bs-whatsnew-notes')!;
 
 whatsnew.innerHTML = `
   <div id="newsContainer">
+    <h1>Short Rest! 3/6</h1>
+    Minor bug where a player could refresh and be no longer paused. Fixed.
+    </br>
     <h1>Short Rest! 3/2</h1>
     I wanted to do something new.
     </br>

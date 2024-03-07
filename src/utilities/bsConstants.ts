@@ -1,6 +1,6 @@
 export class Constants
 {
-    static VERSION = "whatsnew-shortrest-100";
+    static VERSION = "whatsnew-shortrest-101";
     static EXTENSIONID = "com.battle-system.shortrest";
     static PAUSEID = "com.battle-system.shortrest-pause";
     static EXTENSIONWHATSNEW = "com.battle-system.shortrest-whatsnew";
