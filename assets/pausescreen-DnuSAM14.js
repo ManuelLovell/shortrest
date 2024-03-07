@@ -1,4 +1,4 @@
-import{O as s,C as i}from"./bsConstants-cgXdYAIG.js";import{$ as S}from"./blockrain.jquery-DqERG-6C.js";document.querySelector("#pauseScreen").innerHTML=`
+import{O as s,C as i}from"./bsConstants-CIv9LX59.js";import{$ as S}from"./blockrain.jquery-DqERG-6C.js";document.querySelector("#pauseScreen").innerHTML=`
 <div id="gameFlexBox">
     <div class="header">Taking a break..</div>
     <div class="wrapper">
