@@ -34,7 +34,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </tr>
     </table>
     </br>
-    <textarea id="MessageTextarea" rows="4" placeholder="Add a message to the pause screen..."></textarea>
+    <div id="messageSendingControls">
+        <textarea id="MessageTextarea" rows="4" placeholder="Add a message to the pause screen..."></textarea>
+        <button id="sendMessage">SEND</button>
+    </div>
         
     <div id="attendanceBox">
         <ul id="playerList"></ul>
@@ -49,6 +52,7 @@ const HIDEVIEWBUTTON = document.getElementById('hideViewButton') as HTMLButtonEl
 const GAMEVIEWBUTTON = document.getElementById('gameViewButton') as HTMLButtonElement;
 const BREAKLENGTHBUTTON = document.getElementById('breakLength') as HTMLInputElement;
 const BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
+const SENDMESSAGE = document.getElementById('sendMessage') as HTMLButtonElement;
 const MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
 const BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
 
@@ -108,6 +112,23 @@ OBR.onReady(async () =>
             }
         }
 
+        SENDMESSAGE.onclick = async (e) =>
+        {
+            e.preventDefault();
+            
+            if (MESSAGETEXT.value && PAUSED)
+            {
+                await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
+                MESSAGETEXT.value = "";
+                SENDMESSAGE.classList.add('flashing-text');
+                
+                setTimeout(async () =>
+                {
+                    SENDMESSAGE.classList.remove('flashing-text');
+                }, 1000);
+            }
+        };
+
         PAUSEBUTTON.innerHTML = PAUSED ? "Resume</br>Game" : "Pause</br>Game";
         if (PAUSED)
         {
@@ -130,7 +151,6 @@ OBR.onReady(async () =>
             HIDEVIEWBUTTON.disabled = PAUSED;
             GAMEVIEWBUTTON.disabled = PAUSED;
             BREAKLENGTHBUTTON.disabled = PAUSED;
-            MESSAGETEXT.disabled = PAUSED;
         }
         else
         {
@@ -155,7 +175,6 @@ OBR.onReady(async () =>
             HIDEVIEWBUTTON.disabled = PAUSED;
             GAMEVIEWBUTTON.disabled = PAUSED;
             BREAKLENGTHBUTTON.disabled = PAUSED;
-            MESSAGETEXT.disabled = PAUSED;
             OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: PAUSED ? true : false });
             if (PAUSED)
             {
@@ -171,7 +190,10 @@ OBR.onReady(async () =>
                 selfitem.innerText = "Click when ready!";
                 setTimeout(async () =>
                 {
-                    await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
+                    if (MESSAGETEXT.value)
+                        await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
+                    else
+                        await OBR.broadcast.sendMessage(Constants.MESSAGE, "The session has been paused.")
                 }, 2000);
             }
             else

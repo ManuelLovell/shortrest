@@ -8,6 +8,9 @@ const footer = document.querySelector<HTMLElement>('#bs-whatsnew-notes')!;
 
 whatsnew.innerHTML = `
   <div id="newsContainer">
+    <h1>Short Rest! 3/19</h1>
+    Changed the message text to not show at all by default, UNLESS you didn't type any pause text in.
+    </br> Also updated it so you can send new messages while paused.  Should help with some use cases I've heard.
     <h1>Short Rest! 3/6</h1>
     Minor bug where a player could refresh and be no longer paused. Fixed.
     </br>

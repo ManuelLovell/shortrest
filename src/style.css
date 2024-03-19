@@ -88,14 +88,14 @@ td {
     width: 50%;
 }
 
-#timeWrapper
-{
+#timeWrapper {
     display: flex;
     justify-content: center;
     justify-content: space-between;
     padding: 0 15px 0 15px;
     align-items: center;
 }
+
 .wrapper {
     text-align: center;
     display: flex;
@@ -110,6 +110,7 @@ td {
     color: var(--OBR-font);
     text-align: center;
 }
+
 #breakLength {
     text-align: center;
     background-color: var(--OBR-dark-blue);
@@ -136,10 +137,18 @@ button {
 
 button[disabled] {
     opacity: 0.5;
-    /* Reduce opacity to visually indicate disabled state */
     cursor: not-allowed;
-    /* Change cursor to indicate button is not clickable */
-    /* Add additional styles to visually indicate disabled state */
+}
+
+#messageSendingControls {
+    display: flex;
+}
+
+#sendMessage {
+    width: 15%;
+    writing-mode: vertical-rl;
+    align-items: center;
+    text-orientation: upright;
 }
 
 textarea {
@@ -148,7 +157,8 @@ textarea {
     border-radius: 6px;
     border-style: solid;
     border-color: var(--OBR-font);
-    width: 98%;
+    width: 85%;
+    margin-right: 4px;
     resize: none;
 }
 
@@ -227,4 +237,22 @@ textarea {
     border-width: 2px;
     border-style: solid;
     margin-bottom: 16px;
+}
+
+@keyframes flash {
+    0% {
+        color: green;
+    }
+
+    50% {
+        color: var(--OBR-font);
+    }
+
+    100% {
+        color: green;
+    }
+}
+
+.flashing-text {
+    animation: flash .5s infinite;
 }

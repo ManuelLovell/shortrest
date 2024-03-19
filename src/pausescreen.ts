@@ -7,7 +7,6 @@ import { Constants } from './utilities/bsConstants.js';
 
 document.querySelector<HTMLDivElement>('#pauseScreen')!.innerHTML = `
 <div id="gameFlexBox">
-    <div class="header">Taking a break..</div>
     <div class="wrapper">
         <div id="breakMessage" class="break-message" style="display:none;"></div>
     </div>
