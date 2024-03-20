@@ -1,7 +1,7 @@
 {
   "name": "Short Rest!",
   "description": "Simple break time tracker with some tetris.",
-  "version": "1.01",
+  "version": "1.02",
   "author": "Battle-System",
   "manifest_version": 1,
   "icon": "/logo.png",

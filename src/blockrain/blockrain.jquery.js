@@ -1707,8 +1707,8 @@ import jQuery from "jquery";
                     case 39: /*right*/  moveRight(true); break;
                     case 40: /*down*/   drop(true); break;
                     case 38: /*up*/     game._board.cur.rotate('right'); break;
-                    case 88: /*x*/      game._board.cur.rotate('right'); break;
-                    case 90: /*z*/      game._board.cur.rotate('left'); break;
+                    //case 88: /*x*/      game._board.cur.rotate('right'); break; These are disabling the Z/X keys when typing.
+                    //case 90: /*z*/      game._board.cur.rotate('left'); break; These are disabling the Z/X keys when typing.
                     default: caught = false;
                 }
                 if (caught) evt.preventDefault();
