@@ -1,4 +1,4 @@
-import{O as s,C as i}from"./bsConstants-CIv9LX59.js";import{$ as S}from"./blockrain.jquery-DqERG-6C.js";document.querySelector("#pauseScreen").innerHTML=`
+import{O as s,C as i}from"./bsConstants-DXOcgBzX.js";import{$ as S}from"./blockrain.jquery-C9-467bX.js";document.querySelector("#pauseScreen").innerHTML=`
 <div id="gameFlexBox">
     <div class="wrapper">
         <div id="breakMessage" class="break-message" style="display:none;"></div>

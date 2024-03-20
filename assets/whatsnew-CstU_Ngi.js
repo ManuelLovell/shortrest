@@ -1,5 +1,7 @@
-import{O as e,C as o}from"./bsConstants-CIv9LX59.js";const s=document.querySelector("#bs-whatsnew"),n=document.querySelector("#bs-whatsnew-notes");s.innerHTML=`
+import{O as e,C as o}from"./bsConstants-DXOcgBzX.js";const s=document.querySelector("#bs-whatsnew"),n=document.querySelector("#bs-whatsnew-notes");s.innerHTML=`
   <div id="newsContainer">
+    <h1>Short Rest! 3/20</h1>
+    Found a bug with the Z/X keys being eaten by Tetris. Fixed.
     <h1>Short Rest! 3/19</h1>
     Changed the message text to not show at all by default, UNLESS you didn't type any pause text in.
     </br> Also updated it so you can send new messages while paused.  Should help with some use cases I've heard.
