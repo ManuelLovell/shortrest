@@ -1,5 +1,10 @@
-import{O as e,C as o}from"./bsConstants-DXOcgBzX.js";const s=document.querySelector("#bs-whatsnew"),n=document.querySelector("#bs-whatsnew-notes");s.innerHTML=`
+import{O as e,C as o}from"./bsConstants-DkgTi0D1.js";const s=document.querySelector("#bs-whatsnew"),n=document.querySelector("#bs-whatsnew-notes");s.innerHTML=`
   <div id="newsContainer">
+    <h1>Short Rest! 5/29</h1>
+    Another pre-store release update.
+    </br> Added the controls to the bottom of Tetris.
+    </br> Added an 'end-game' button.
+    </br> Improved support for role swapping.
     <h1>Short Rest! 3/20</h1>
     Found a bug with the Z/X keys being eaten by Tetris. Fixed.
     <h1>Short Rest! 3/19</h1>

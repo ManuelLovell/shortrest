@@ -1,16 +1,71 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Short Rest!</title>
-    <script type="module" crossorigin src="/assets/main-8Jnb5BdB.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/bsConstants-DXOcgBzX.js">
-    <link rel="modulepreload" crossorigin href="/assets/blockrain.jquery-C9-467bX.js">
-    <link rel="stylesheet" crossorigin href="/assets/blockrain-oypb_F8l.css">
-    <link rel="stylesheet" crossorigin href="/assets/main-B6hkddC3.css">
-  </head>
-  <body id="bodyElement">
-    <div id="app"></div>
-  </body>
+  <script type="module" crossorigin src="/assets/main-Bc9UQ8QK.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/bsConstants-DkgTi0D1.js">
+  <link rel="modulepreload" crossorigin href="/assets/blockrain.jquery-2qJd7CXZ.js">
+  <link rel="stylesheet" crossorigin href="/assets/blockrain-oypb_F8l.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-Cx6B126Y.css">
+</head>
+
+<body id="bodyElement">
+    <div id="app">
+        <div class="header">Short Rest!</div>
+        <div id="whatsNew"></div>
+        <table>
+            <tr>
+                <td>
+                    <button id="pauseButton">Pause</br>Game</button>
+                </td>
+                <td>
+                    <button id="hideViewButton">Hide View</br>Disabled</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="wrapper">
+                        <label for="breakLength">Break Timer (Mins):</label>
+                        <div id="timeWrapper">
+                            <input type="number" id="breakLength" name="breakLength" maxlength="2" min="0">
+                            <div id="breakTimer">--:--</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <button id="gameViewButton">Mini-Game</br>Disabled</button>
+                </td>
+            </tr>
+        </table>
+        </br>
+        <div id="messageSendingControls">
+            <textarea id="MessageTextarea" rows="4" placeholder="Add a message to the pause screen..."></textarea>
+            <button id="sendMessage">SEND</button>
+        </div>
+
+        <div id="attendanceBox">
+            <ul id="playerList"></ul>
+        </div>
+        <div id="blockGameContainer" class="block-game"></div>
+        <div id="blockGameControls">
+            <table style="width: 100%;">
+                <tr>
+                    <th colspan="2">Controls</th>
+                </tr>
+                <tr>
+                    <td class="block-controls-text">A / D : Move</td>
+                    <td class="block-controls-text">S : Drop</td>
+                </tr>
+                <tr>
+                    <td class="block-controls-text">W : Rotate</td>
+                    <td class="block-controls-text">ESC : End Game</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+
 </html>
