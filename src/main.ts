@@ -7,73 +7,331 @@ import * as Utilities from './utilities/bsUtilities';
 import { BSCACHE } from './utilities/bsSceneCache';
 import { Constants } from './utilities/bsConstants';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-    <div class="header">Short Rest!</div><div id="whatsNew"></div>
-    <table>
-        <tr>
-            <td>
-                <button id="pauseButton">Pause</br>Game</button>
-            </td>
-            <td>
-                <button id="hideViewButton">Hide View</br>Disabled</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="wrapper">
-                    <label for="breakLength">Break Timer (Mins):</label>
-                    <div id="timeWrapper">
-                        <input type="number" id="breakLength" name="breakLength" maxlength="2" min="0">
-                        <div id="breakTimer">--:--</div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <button id="gameViewButton">Mini-Game</br>Disabled</button>
-            </td>
-        </tr>
-    </table>
-    </br>
-    <div id="messageSendingControls">
-        <textarea id="MessageTextarea" rows="4" placeholder="Add a message to the pause screen..."></textarea>
-        <button id="sendMessage">SEND</button>
-    </div>
-        
-    <div id="attendanceBox">
-        <ul id="playerList"></ul>
-    </div>
-    <div id="blockGameContainer" class="block-game"></div>
-`;
-
-const BASEHEIGHT = 420;
-const PLAYERLISTING = document.getElementById('playerList') as HTMLUListElement;
-const PAUSEBUTTON = document.getElementById('pauseButton') as HTMLButtonElement;
-const HIDEVIEWBUTTON = document.getElementById('hideViewButton') as HTMLButtonElement;
-const GAMEVIEWBUTTON = document.getElementById('gameViewButton') as HTMLButtonElement;
-const BREAKLENGTHBUTTON = document.getElementById('breakLength') as HTMLInputElement;
-const BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
-const SENDMESSAGE = document.getElementById('sendMessage') as HTMLButtonElement;
-const MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
-const BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
-
-let SELFREADY = false;
-let timerId: number;
-
 OBR.onReady(async () =>
 {
     await BSCACHE.InitializeCache();
     BSCACHE.SetupHandlers();
 
-    let PAUSED = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
-    let OBSCURE = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
-    let GAME = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/game`] as boolean ?? false;
-
     if (BSCACHE.playerRole === "PLAYER")
     {
+        await SHORTREST.InitiatePlayer();
+    }
+    else
+    {
+        await SHORTREST.InitiateGM();
+    }
+});
+
+class ShortRest
+{
+    baseHeight = 420;
+    paused = false;
+    obscure = false;
+    game = false;
+    selfReady: boolean;
+    timerId: number;
+    version: string;
+
+    MAINAPP = document.getElementById('app') as HTMLDivElement;
+    PLAYERLISTING = document.getElementById('playerList') as HTMLUListElement;
+    PAUSEBUTTON = document.getElementById('pauseButton') as HTMLButtonElement;
+    HIDEVIEWBUTTON = document.getElementById('hideViewButton') as HTMLButtonElement;
+    GAMEVIEWBUTTON = document.getElementById('gameViewButton') as HTMLButtonElement;
+    BREAKLENGTHBUTTON = document.getElementById('breakLength') as HTMLInputElement;
+    BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
+    SENDMESSAGE = document.getElementById('sendMessage') as HTMLButtonElement;
+    MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
+    BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
+
+    constructor(version: string)
+    {
+        this.version = `SHORTREST-${version}`;
+        this.selfReady = false;
+        this.timerId = 0;
+    }
+
+    public async RetrieveSettings()
+    {
+        this.paused = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
+        this.obscure = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
+        this.game = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/game`] as boolean ?? false;
+    }
+
+    public async InitiateGM()
+    {
+        this.RetrieveSettings();
+
+        this.PLAYERLISTING = document.getElementById('playerList') as HTMLUListElement;
+        this.PAUSEBUTTON = document.getElementById('pauseButton') as HTMLButtonElement;
+        this.HIDEVIEWBUTTON = document.getElementById('hideViewButton') as HTMLButtonElement;
+        this.GAMEVIEWBUTTON = document.getElementById('gameViewButton') as HTMLButtonElement;
+        this.BREAKLENGTHBUTTON = document.getElementById('breakLength') as HTMLInputElement;
+        this.BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
+        this.SENDMESSAGE = document.getElementById('sendMessage') as HTMLButtonElement;
+        this.MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
+        this.BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
+
+        const whatsNewContainer = document.getElementById("whatsNew")!;
+        whatsNewContainer.appendChild(Utilities.GetWhatsNewButton());
+
+        this.BREAKLENGTHBUTTON.value = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string ?? "0";
+
+        const selfitem = document.createElement('li');
+        selfitem.id = `pl_${BSCACHE.playerId}`;
+        selfitem.classList.add("self-list-item");
+        selfitem.innerText = "Self";
+        this.PLAYERLISTING.appendChild(selfitem);
+
+        selfitem.onclick = async (e) =>
+        {
+            e.preventDefault();
+            if (this.paused)
+            {
+                this.selfReady = !this.selfReady;
+                selfitem.style.backgroundImage = this.selfReady ? 'url(/check.svg)' : 'url(/cross.svg)';
+                selfitem.innerText = this.selfReady ? "Click to un-ready" : "Click when ready!";
+                await OBR.broadcast.sendMessage(Constants.TRANSPORT, this.selfReady ? Constants.READY : Constants.BUSY);
+            }
+        }
+
+        this.SENDMESSAGE.onclick = async (e) =>
+        {
+            e.preventDefault();
+
+            if (this.MESSAGETEXT.value && this.paused)
+            {
+                await OBR.broadcast.sendMessage(Constants.MESSAGE, this.MESSAGETEXT.value);
+                this.MESSAGETEXT.value = "";
+                this.SENDMESSAGE.classList.add('flashing-text');
+
+                setTimeout(async () =>
+                {
+                    this.SENDMESSAGE.classList.remove('flashing-text');
+                }, 1000);
+            }
+        };
+
+        this.PAUSEBUTTON.innerHTML = this.paused ? "Resume</br>Game" : "Pause</br>Game";
+        if (this.paused)
+        {
+            const timer = parseInt(this.BREAKLENGTHBUTTON.value);
+            if (timer > 0)
+            {
+                this.StartCountdown(timer);
+            }
+            else
+            {
+                this.BREAKTIMER.innerText = "--:--";
+            }
+
+            const listItems = this.PLAYERLISTING.querySelectorAll('li');
+            for (const item of listItems)
+            {
+                item.style.backgroundImage = !this.paused ? 'url(/check.svg)' : 'url(/cross.svg)';
+            }
+            selfitem.innerText = "Click when ready!";
+            this.HIDEVIEWBUTTON.disabled = this.paused;
+            this.GAMEVIEWBUTTON.disabled = this.paused;
+            this.BREAKLENGTHBUTTON.disabled = this.paused;
+        }
+        else
+        {
+            const listItems = this.PLAYERLISTING.querySelectorAll<HTMLDivElement>('.player-score-item');
+            for (const item of listItems)
+            {
+                item.innerText = '';
+            }
+        }
+
+        this.PAUSEBUTTON.onclick = async (e) =>
+        {
+            e.preventDefault();
+            this.paused = !this.paused;
+            this.PAUSEBUTTON.innerHTML = this.paused ? "Resume</br>Game" : "Pause</br>Game";
+
+            const listItems = this.PLAYERLISTING.querySelectorAll('li');
+            for (const item of listItems)
+            {
+                item.style.backgroundImage = !this.paused ? 'url(/check.svg)' : 'url(/cross.svg)';
+            }
+            this.HIDEVIEWBUTTON.disabled = this.paused;
+            this.GAMEVIEWBUTTON.disabled = this.paused;
+            this.BREAKLENGTHBUTTON.disabled = this.paused;
+            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: this.paused ? true : false });
+            if (this.paused)
+            {
+                const timer = parseInt(this.BREAKLENGTHBUTTON.value);
+                if (timer > 0)
+                {
+                    this.StartCountdown(timer);
+                }
+                else
+                {
+                    this.BREAKTIMER.innerText = "--:--";
+                }
+                selfitem.innerText = "Click when ready!";
+                setTimeout(async () =>
+                {
+                    if (this.MESSAGETEXT.value)
+                        await OBR.broadcast.sendMessage(Constants.MESSAGE, this.MESSAGETEXT.value);
+                    else
+                        await OBR.broadcast.sendMessage(Constants.MESSAGE, "The session has been paused.")
+                }, 2000);
+            }
+            else
+            {
+                this.BREAKTIMER.innerText = "--:--";
+                clearInterval(this.timerId);
+                selfitem.innerText = "Self";
+            }
+            await this.StartGame();
+        };
+
+        this.HIDEVIEWBUTTON.innerHTML = this.obscure ? `Hide View</br>Enabled` : `Hide View</br>Disabled`;
+        this.HIDEVIEWBUTTON.onclick = async (e) =>
+        {
+            e.preventDefault();
+            this.obscure = !this.obscure;
+            this.HIDEVIEWBUTTON.innerHTML = this.obscure ? `Hide View</br>Enabled` : `Hide View</br>Disabled`;
+
+            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/obscure`]: this.obscure ? true : false });
+        };
+
+        this.GAMEVIEWBUTTON.innerHTML = this.game ? `Mini-Game</br>Enabled` : `Mini-Game</br>Disabled`;
+        this.GAMEVIEWBUTTON.onclick = async (e) =>
+        {
+            e.preventDefault();
+            this.game = !this.game;
+            this.GAMEVIEWBUTTON.innerHTML = this.game ? `Mini-Game</br>Enabled` : `Mini-Game</br>Disabled`;
+
+            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/game`]: this.game ? true : false });
+        };
+
+        this.BREAKLENGTHBUTTON.oninput = async () =>
+        {
+            this.BREAKLENGTHBUTTON.value = this.BREAKLENGTHBUTTON.value.slice(0, 2);
+        };
+        this.BREAKLENGTHBUTTON.onblur = async () =>
+        {
+            const time = this.BREAKLENGTHBUTTON.value ?? 0;
+            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/time`]: time });
+        };
+
+        this.RefreshPlayerList();
+        await this.StartGame();
+    }
+
+    public RefreshPlayerList()
+    {
+        const listItems = this.PLAYERLISTING.querySelectorAll('li');
+        for (const listitem of listItems)
+        {
+            const id = listitem.id.split('_')[1];
+            if (!BSCACHE.party.some(player => player.id === id))
+            {
+                if (id !== BSCACHE.playerId)
+                {
+                    listitem.remove();
+                }
+            }
+        }
+
+        for (const player of BSCACHE.party)
+        {
+            const existingitem = document.getElementById(`pl_${player.id}`);
+            if (!existingitem)
+            {
+                const playeritem = document.createElement('li');
+                playeritem.id = `pl_${player.id}`;
+                playeritem.classList.add("player-list-item");
+                playeritem.innerHTML = `${player.name} <div class="player-score-item" id="con_${player.connectionId}"></div>`;
+                this.PLAYERLISTING.appendChild(playeritem);
+            }
+        }
+    }
+
+    public StartCountdown(minutes: number)
+    {
+        // Calculate total seconds from minutes
+        let totalSeconds = minutes * 60;
+
+        // Update timer initially
+        this.UpdateTimer(totalSeconds);
+
+        // Update timer every second
+        this.timerId = setInterval(() =>
+        {
+            totalSeconds--;
+            if (totalSeconds <= 0)
+            {
+                clearInterval(this.timerId);
+                this.BREAKTIMER.innerText = 'Time is up!';
+            } else
+            {
+                this.UpdateTimer(totalSeconds);
+            }
+        }, 1000);
+    }
+
+    // Function to update the timer display
+    public UpdateTimer(totalSeconds: number)
+    {
+        // Calculate minutes and seconds
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        // Format the time as "MM:SS"
+        const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        // Update the timer display
+        this.BREAKTIMER.innerText = formattedTime;
+    }
+
+    public async StartGame()
+    {
+        if (this.paused && this.game)
+        {
+            await OBR.action.setHeight(this.baseHeight + 400);
+            this.BODYELEMENT.style.height = "100%";
+            document.getElementById('blockGameContainer')!.style.display = "block";
+            document.getElementById('blockGameControls')!.style.display = "block";
+            $('.block-game').blockrain({
+                autoplay: false,
+                autoplayRestart: false,
+                theme: "candy",
+                playText: 'Pass some time during the break?',
+                playButtonText: 'Play',
+                gameOverText: 'Game Over',
+                restartButtonText: 'Play Again',
+                scoreText: 'Score',
+                onStart: async function ()
+                {
+                    await OBR.broadcast.sendMessage(Constants.SCORE, 0);
+                },
+                onRestart: function () { },
+                onLine: async function (_lines: string, _scoreIncrement: string, score: string)
+                {
+                    await OBR.broadcast.sendMessage(Constants.SCORE, score);
+                }
+            });
+        }
+        else
+        {
+            await OBR.action.setHeight(this.baseHeight);
+            document.getElementById('blockGameContainer')!.style.display = "none";
+            document.getElementById('blockGameControls')!.style.display = "none";
+            this.BODYELEMENT.style.height = "";
+        }
+    }
+
+    public async InitiatePlayer()
+    {
+        this.RetrieveSettings();
+
         await OBR.action.setHeight(50);
         document.querySelector<HTMLDivElement>('#app')!.innerHTML = "<div class='header'>Enjoy your stay.</div>";;
 
-        if (PAUSED)
+        if (this.paused)
         {
             BSCACHE.paused = true;
             await OBR.modal.open({
@@ -81,293 +339,11 @@ OBR.onReady(async () =>
                 url: "/pausescreen.html",
                 fullScreen: true,
                 hideBackdrop: false,
-                hidePaper: !OBSCURE,
+                hidePaper: !this.obscure,
                 disablePointerEvents: false,
             });
         }
-        return;
     }
-    else
-    {
-        const whatsNewContainer = document.getElementById("whatsNew")!;
-        whatsNewContainer.appendChild(Utilities.GetWhatsNewButton());
+}
 
-        BREAKLENGTHBUTTON.value = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string ?? "0";
-
-        const selfitem = document.createElement('li');
-        selfitem.id = `pl_${BSCACHE.playerId}`;
-        selfitem.classList.add("self-list-item");
-        selfitem.innerText = "Self";
-        PLAYERLISTING.appendChild(selfitem);
-
-        selfitem.onclick = async (e) =>
-        {
-            e.preventDefault();
-            if (PAUSED)
-            {
-                SELFREADY = !SELFREADY;
-                selfitem.style.backgroundImage = SELFREADY ? 'url(/check.svg)' : 'url(/cross.svg)';
-                selfitem.innerText = SELFREADY ? "Click to un-ready" : "Click when ready!";
-                await OBR.broadcast.sendMessage(Constants.TRANSPORT, SELFREADY ? Constants.READY : Constants.BUSY);
-            }
-        }
-
-        SENDMESSAGE.onclick = async (e) =>
-        {
-            e.preventDefault();
-            
-            if (MESSAGETEXT.value && PAUSED)
-            {
-                await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
-                MESSAGETEXT.value = "";
-                SENDMESSAGE.classList.add('flashing-text');
-                
-                setTimeout(async () =>
-                {
-                    SENDMESSAGE.classList.remove('flashing-text');
-                }, 1000);
-            }
-        };
-
-        PAUSEBUTTON.innerHTML = PAUSED ? "Resume</br>Game" : "Pause</br>Game";
-        if (PAUSED)
-        {
-            const timer = parseInt(BREAKLENGTHBUTTON.value);
-            if (timer > 0)
-            {
-                startCountdown(timer);
-            }
-            else
-            {
-                BREAKTIMER.innerText = "--:--";
-            }
-
-            const listItems = PLAYERLISTING.querySelectorAll('li');
-            for (const item of listItems)
-            {
-                item.style.backgroundImage = !PAUSED ? 'url(/check.svg)' : 'url(/cross.svg)';
-            }
-            selfitem.innerText = "Click when ready!";
-            HIDEVIEWBUTTON.disabled = PAUSED;
-            GAMEVIEWBUTTON.disabled = PAUSED;
-            BREAKLENGTHBUTTON.disabled = PAUSED;
-        }
-        else
-        {
-            const listItems = PLAYERLISTING.querySelectorAll<HTMLDivElement>('.player-score-item');
-            for (const item of listItems)
-            {
-                item.innerText = '';
-            }
-        }
-
-        PAUSEBUTTON.onclick = async (e) =>
-        {
-            e.preventDefault();
-            PAUSED = !PAUSED;
-            PAUSEBUTTON.innerHTML = PAUSED ? "Resume</br>Game" : "Pause</br>Game";
-
-            const listItems = PLAYERLISTING.querySelectorAll('li');
-            for (const item of listItems)
-            {
-                item.style.backgroundImage = !PAUSED ? 'url(/check.svg)' : 'url(/cross.svg)';
-            }
-            HIDEVIEWBUTTON.disabled = PAUSED;
-            GAMEVIEWBUTTON.disabled = PAUSED;
-            BREAKLENGTHBUTTON.disabled = PAUSED;
-            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: PAUSED ? true : false });
-            if (PAUSED)
-            {
-                const timer = parseInt(BREAKLENGTHBUTTON.value);
-                if (timer > 0)
-                {
-                    startCountdown(timer);
-                }
-                else
-                {
-                    BREAKTIMER.innerText = "--:--";
-                }
-                selfitem.innerText = "Click when ready!";
-                setTimeout(async () =>
-                {
-                    if (MESSAGETEXT.value)
-                        await OBR.broadcast.sendMessage(Constants.MESSAGE, MESSAGETEXT.value);
-                    else
-                        await OBR.broadcast.sendMessage(Constants.MESSAGE, "The session has been paused.")
-                }, 2000);
-            }
-            else
-            {
-                BREAKTIMER.innerText = "--:--";
-                clearInterval(timerId);
-                selfitem.innerText = "Self";
-            }
-            await StartGame();
-        };
-
-        HIDEVIEWBUTTON.innerHTML = OBSCURE ? `Hide View</br>Enabled` : `Hide View</br>Disabled`;
-        HIDEVIEWBUTTON.onclick = async (e) =>
-        {
-            e.preventDefault();
-            OBSCURE = !OBSCURE;
-            HIDEVIEWBUTTON.innerHTML = OBSCURE ? `Hide View</br>Enabled` : `Hide View</br>Disabled`;
-
-            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/obscure`]: OBSCURE ? true : false });
-        };
-
-        GAMEVIEWBUTTON.innerHTML = GAME ? `Mini-Game</br>Enabled` : `Mini-Game</br>Disabled`;
-        GAMEVIEWBUTTON.onclick = async (e) =>
-        {
-            e.preventDefault();
-            GAME = !GAME;
-            GAMEVIEWBUTTON.innerHTML = GAME ? `Mini-Game</br>Enabled` : `Mini-Game</br>Disabled`;
-
-            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/game`]: GAME ? true : false });
-        };
-
-        BREAKLENGTHBUTTON.oninput = async () =>
-        {
-            BREAKLENGTHBUTTON.value = BREAKLENGTHBUTTON.value.slice(0, 2);
-        };
-        BREAKLENGTHBUTTON.onblur = async () =>
-        {
-            const time = BREAKLENGTHBUTTON.value ?? 0;
-            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/time`]: time });
-        };
-
-        RefreshPlayerList();
-        await StartGame();
-
-        ///////////////////
-        /// Broadcast Handler
-        ///////////////////
-        // Sample: await OBR.broadcast.sendMessage(Constants.TRANSPORT, "Hello!");
-        OBR.broadcast.onMessage(Constants.TRANSPORT, async (event: Broadcast) =>
-        {
-            if (BSCACHE.playerRole === 'GM')
-            {
-                const connection = event.connectionId;
-                const player = BSCACHE.party.find(x => x.connectionId === connection);
-                if (player)
-                {
-                    const listItemId = `pl_${player.id}`;
-                    const listItem = document.getElementById(listItemId);
-                    if (listItem)
-                    {
-                        listItem.style.backgroundImage = event.data === Constants.READY ? 'url(/check.svg)' : 'url(/cross.svg)';
-                    }
-                }
-            }
-        });
-
-        OBR.broadcast.onMessage(Constants.SCORE, async (event: Broadcast) =>
-        {
-            const listItemId = `con_${event.connectionId}`;
-            const listItem = document.getElementById(listItemId);
-            if (listItem)
-            {
-                listItem.innerText = `Score: ${event.data}`;
-            }
-        });
-        function RefreshPlayerList()
-        {
-            const listItems = PLAYERLISTING.querySelectorAll('li');
-            for (const listitem of listItems)
-            {
-                const id = listitem.id.split('_')[1];
-                if (!BSCACHE.party.some(player => player.id === id))
-                {
-                    if (id !== BSCACHE.playerId)
-                    {
-                        listitem.remove();
-                    }
-                }
-            }
-
-            for (const player of BSCACHE.party)
-            {
-                const existingitem = document.getElementById(`pl_${player.id}`);
-                if (!existingitem)
-                {
-                    const playeritem = document.createElement('li');
-                    playeritem.id = `pl_${player.id}`;
-                    playeritem.classList.add("player-list-item");
-                    playeritem.innerHTML = `${player.name} <div class="player-score-item" id="con_${player.connectionId}"></div>`;
-                    PLAYERLISTING.appendChild(playeritem);
-                }
-            }
-        }
-
-        function startCountdown(minutes: number)
-        {
-            // Calculate total seconds from minutes
-            let totalSeconds = minutes * 60;
-
-            // Update timer initially
-            updateTimer(totalSeconds);
-
-            // Update timer every second
-            timerId = setInterval(() =>
-            {
-                totalSeconds--;
-                if (totalSeconds <= 0)
-                {
-                    clearInterval(timerId);
-                    BREAKTIMER.innerText = 'Time is up!';
-                } else
-                {
-                    updateTimer(totalSeconds);
-                }
-            }, 1000);
-        }
-
-        // Function to update the timer display
-        function updateTimer(totalSeconds: number)
-        {
-            // Calculate minutes and seconds
-            const minutes = Math.floor(totalSeconds / 60);
-            const seconds = totalSeconds % 60;
-
-            // Format the time as "MM:SS"
-            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-            // Update the timer display
-            BREAKTIMER.innerText = formattedTime;
-        }
-
-        async function StartGame()
-        {
-            if (PAUSED && GAME)
-            {
-                await OBR.action.setHeight(BASEHEIGHT + 400);
-                BODYELEMENT.style.height = "100%";
-                document.getElementById('blockGameContainer')!.style.display = "block";
-                $('.block-game').blockrain({
-                    autoplay: false,
-                    autoplayRestart: false,
-                    theme: "candy",
-                    playText: 'Pass some time during the break?',
-                    playButtonText: 'Play',
-                    gameOverText: 'Game Over',
-                    restartButtonText: 'Play Again',
-                    scoreText: 'Score',
-                    onStart: async function ()
-                    {
-                        await OBR.broadcast.sendMessage(Constants.SCORE, 0);
-                    },
-                    onRestart: function () { },
-                    onLine: async function (_lines: string, _scoreIncrement: string, score: string)
-                    {
-                        await OBR.broadcast.sendMessage(Constants.SCORE, score);
-                    }
-                });
-            }
-            else
-            {
-                await OBR.action.setHeight(BASEHEIGHT);
-                document.getElementById('blockGameContainer')!.style.display = "none";
-                BODYELEMENT.style.height = "";
-            }
-        }
-    }
-});
+export const SHORTREST = new ShortRest("1.03");

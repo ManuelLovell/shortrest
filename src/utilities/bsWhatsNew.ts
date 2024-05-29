@@ -8,6 +8,11 @@ const footer = document.querySelector<HTMLElement>('#bs-whatsnew-notes')!;
 
 whatsnew.innerHTML = `
   <div id="newsContainer">
+    <h1>Short Rest! 5/29</h1>
+    Another pre-store release update.
+    </br> Added the controls to the bottom of Tetris.
+    </br> Added an 'end-game' button.
+    </br> Improved support for role swapping.
     <h1>Short Rest! 3/20</h1>
     Found a bug with the Z/X keys being eaten by Tetris. Fixed.
     <h1>Short Rest! 3/19</h1>

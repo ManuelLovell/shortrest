@@ -1,6 +1,7 @@
 import OBR, { Grid, Item, Metadata, Player, Theme } from "@owlbear-rodeo/sdk";
 import * as Utilities from './bsUtilities';
 import { Constants } from "./bsConstants";
+import { SHORTREST } from "../main";
 class BSCache
 {
     // Cache Names
@@ -20,6 +21,7 @@ class BSCache
     playerName: string;
     playerMetadata: {};
     playerRole: "GM" | "PLAYER";
+    playerPreviousRole: "GM" | "PLAYER";
 
     party: Player[];
 
@@ -50,6 +52,9 @@ class BSCache
     themeHandler?: () => void;
     roomHandler?: () => void;
 
+    transportHandler?: () => void;
+    scoreHandler?: () => void;
+
     constructor(caches: string[])
     {
         this.playerId = "";
@@ -57,6 +62,7 @@ class BSCache
         this.playerColor = "";
         this.playerMetadata = {};
         this.playerRole = "PLAYER";
+        this.playerPreviousRole = "PLAYER";
         this.party = [];
         this.sceneItems = [];
         this.sceneSelected = [];
@@ -91,6 +97,7 @@ class BSCache
             this.playerColor = await OBR.player.getColor();
             this.playerMetadata = await OBR.player.getMetadata();
             this.playerRole = await OBR.player.getRole();
+            this.playerPreviousRole = this.playerRole;
         }
 
         if (this.caches.includes(BSCache.PARTY))
@@ -134,11 +141,13 @@ class BSCache
         if (this.caches.includes(BSCache.ROOMMETA) && this.roomHandler !== undefined) this.roomHandler!();
 
         if (this.themeHandler !== undefined) this.themeHandler!();
+
+        if (this.transportHandler !== undefined) this.transportHandler!();
+        if (this.scoreHandler !== undefined) this.scoreHandler!();
     }
 
     public SetupHandlers()
     {
-
         if (this.sceneMetadataHandler === undefined || this.sceneMetadataHandler.length === 0)
         {
             if (this.caches.includes(BSCache.SCENEMETA))
@@ -265,6 +274,37 @@ class BSCache
                 await this.OnSceneReadyChange(ready);
             });
         }
+
+        ///////////////////
+        /// Broadcast Handler
+        ///////////////////
+        this.transportHandler = OBR.broadcast.onMessage(Constants.TRANSPORT, async (event: Broadcast) =>
+        {
+            if (BSCACHE.playerRole === 'GM')
+            {
+                const connection = event.connectionId;
+                const player = BSCACHE.party.find(x => x.connectionId === connection);
+                if (player)
+                {
+                    const listItemId = `pl_${player.id}`;
+                    const listItem = document.getElementById(listItemId);
+                    if (listItem)
+                    {
+                        listItem.style.backgroundImage = event.data === Constants.READY ? 'url(/check.svg)' : 'url(/cross.svg)';
+                    }
+                }
+            }
+        });
+
+        this.scoreHandler = OBR.broadcast.onMessage(Constants.SCORE, async (event: Broadcast) =>
+        {
+            const listItemId = `con_${event.connectionId}`;
+            const listItem = document.getElementById(listItemId);
+            if (listItem)
+            {
+                listItem.innerText = `Score: ${event.data}`;
+            }
+        });
     }
 
     public async OnSceneMetadataChanges(_metadata: Metadata)
@@ -285,15 +325,25 @@ class BSCache
 
     public async OnSceneReadyChange(ready: boolean)
     {
-
         if (ready)
         {
             this.SetupHandlers();
         }
     }
 
-    public async OnPlayerChange(_player: Player)
+    public async OnPlayerChange(player: Player)
     {
+        if (player.role === "GM" && this.playerPreviousRole === "PLAYER")
+        {
+            SHORTREST.MAINAPP.innerHTML = Constants.BASEHTML;
+            await OBR.action.setHeight(SHORTREST.baseHeight);
+            await SHORTREST.InitiateGM();
+        }
+        else if (player.role === "PLAYER" && this.playerPreviousRole === "GM")
+        {
+            await SHORTREST.InitiatePlayer();
+        }
+        this.playerPreviousRole = player.role;
     }
 
     public async OnPartyChange(party: Player[])
@@ -313,7 +363,7 @@ class BSCache
                     }
                 }
             }
-    
+
             for (const player of party)
             {
                 const existingitem = document.getElementById(`pl_${player.id}`);

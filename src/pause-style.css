@@ -163,3 +163,7 @@ button {
     text-align: center;
     padding: 10px;
 }
+
+.block-controls-text {
+    padding-left: 15px;
+}

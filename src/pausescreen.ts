@@ -15,6 +15,21 @@ document.querySelector<HTMLDivElement>('#pauseScreen')!.innerHTML = `
         <ul id="playerList"></ul>
     </div>
     <div id="blockGameContainer" class="block-game"></div>
+    <div id="blockGameControls">
+        <table style="width: 100%;">
+            <tr>
+                <th colspan="2">Controls</th>
+            </tr>
+            <tr>
+                <td class="block-controls-text">A / D : Move</td>
+                <td class="block-controls-text">S : Drop</td>
+            </tr>
+            <tr>
+                <td class="block-controls-text">W : Rotate</td>
+                <td class="block-controls-text">ESC : End Game</td>
+            </tr>
+        </table>
+    </div>
 </div>
 `;
 
@@ -73,6 +88,7 @@ OBR.onReady(async () =>
             }
         }
     });
+
     OBR.broadcast.onMessage(Constants.SCORE, async (event: Broadcast) =>
     {
         const listItemId = `con_${event.connectionId}`;
@@ -82,6 +98,7 @@ OBR.onReady(async () =>
             listItem.innerText = `Score: ${event.data}`;
         }
     });
+
     OBR.broadcast.onMessage(Constants.MESSAGE, async (event: Broadcast) =>
     {
         if (event.data)
@@ -193,5 +210,6 @@ OBR.onReady(async () =>
     else
     {
         document.getElementById('blockGameContainer')!.style.display = "none";
+        document.getElementById('blockGameControls')!.style.display = "none";
     }
 });

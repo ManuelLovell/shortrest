@@ -50,6 +50,7 @@
 html,
 #app {
     height: 100%;
+    scrollbar-width: thin;
 }
 
 #playerList {
@@ -255,4 +256,8 @@ textarea {
 
 .flashing-text {
     animation: flash .5s infinite;
+}
+
+.block-controls-text {
+    padding-left: 15px;
 }
