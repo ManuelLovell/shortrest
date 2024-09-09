@@ -20,6 +20,9 @@ OBR.onReady(async () =>
     {
         await SHORTREST.InitiateGM();
     }
+
+    const patreonContainer = document.getElementById("patreonContainer")!;
+    patreonContainer.appendChild(Utilities.GetPatreonButton());
 });
 
 class ShortRest
@@ -50,7 +53,7 @@ class ShortRest
         this.timerId = 0;
     }
 
-    public async RetrieveSettings()
+    public RetrieveSettings()
     {
         this.paused = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
         this.obscure = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
@@ -70,9 +73,6 @@ class ShortRest
         this.SENDMESSAGE = document.getElementById('sendMessage') as HTMLButtonElement;
         this.MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
         this.BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
-
-        const whatsNewContainer = document.getElementById("whatsNew")!;
-        whatsNewContainer.appendChild(Utilities.GetWhatsNewButton());
 
         this.BREAKLENGTHBUTTON.value = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string ?? "0";
 
@@ -329,7 +329,7 @@ class ShortRest
         this.RetrieveSettings();
 
         await OBR.action.setHeight(50);
-        document.querySelector<HTMLDivElement>('#app')!.innerHTML = "<div class='header'>Enjoy your stay.</div>";;
+        document.querySelector<HTMLDivElement>('#app')!.innerHTML = "<div class='header'>Enjoy your stay.<div id='patreonContainer'></div></div>";;
 
         if (this.paused)
         {

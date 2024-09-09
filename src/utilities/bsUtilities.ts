@@ -1,42 +1,18 @@
-import OBR, { Item, Image, Theme } from "@owlbear-rodeo/sdk";
+import { Item, Image, Theme } from "@owlbear-rodeo/sdk";
 import { BSCACHE } from "./bsSceneCache";
-import { Constants } from "./bsConstants";
 
-
-export function GetWhatsNewButton()
+export function GetPatreonButton()
 {
     const newImgElement = document.createElement('img');
-    newImgElement.id = "whatsNewButton";
-    newImgElement.style.cursor = "pointer";
+    newImgElement.id = "PatreonButton";
     newImgElement.setAttribute('class', 'icon');
-    newImgElement.classList.add('clickable');
-    newImgElement.setAttribute('title', 'Whats New?');
-    newImgElement.setAttribute('src', '/info.svg');
-    newImgElement.onclick = async function ()
+    newImgElement.classList.add('patreon-clickable');
+    newImgElement.setAttribute('title', BSCACHE.USER_REGISTERED ? 'Thanks for subscribing!' : 'Get the news on updates on the Battle-System Patreon');
+    newImgElement.setAttribute('src', BSCACHE.USER_REGISTERED ? '/w-thankyou.svg' : '/w-patreon-2.png');
+    newImgElement.onclick = async function (e)
     {
-        try
-        {
-            localStorage.setItem(Constants.VERSION, "true");
-            newImgElement.classList.remove('whats-new-shine');
-        } catch (error)
-        {
-            // Oh well.
-        }
-        await OBR.modal.open({
-            id: Constants.EXTENSIONWHATSNEW,
-            url: `/bswhatsnew.html`,
-            height: 500,
-            width: 350,
-        });
-    };
-
-    try
-    {
-        const glow = localStorage.getItem(Constants.VERSION);
-        if (glow !== "true") newImgElement.classList.add('whats-new-shine');
-    } catch (error)
-    {
-        // Oh well.
+        e.preventDefault();
+        window.open("https://www.patreon.com/battlesystem", "_blank");
     }
 
     return newImgElement;

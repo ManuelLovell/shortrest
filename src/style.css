@@ -72,11 +72,25 @@ html,
     border-radius: 6px;
 }
 
-#whatsNew {
+#patreonContainer
+{
     position: absolute;
     top: 0;
     right: 0;
     padding: 10px;
+    border: 1px solid var(--foreground-color);
+    border-radius: 6px;
+}
+
+.patreon-clickable {
+    filter: var(--invert);
+    cursor: pointer;
+    background-color: transparent !important;
+    border-style: none !important;
+    height: 20px;
+    width: 20px;
+    padding: 0 2px 4px;
+    vertical-align: middle;
 }
 
 .header {
