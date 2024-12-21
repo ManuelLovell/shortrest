@@ -4,6 +4,7 @@ import './blockrain/blockrain.jquery.js';
 import $ from "jquery";
 import OBR, { Player } from '@owlbear-rodeo/sdk';
 import { Constants } from './utilities/bsConstants.js';
+import { FetchUtcTime } from './utilities/bsWorldTime.js';
 
 document.querySelector<HTMLDivElement>('#pauseScreen')!.innerHTML = `
 <div id="gameFlexBox">
@@ -49,6 +50,7 @@ OBR.onReady(async () =>
 
     const gameenabled = roomData[`${Constants.EXTENSIONID}/game`] as boolean;
     const breaktime = roomData[`${Constants.EXTENSIONID}/time`] as number;
+    const pausedAt = roomData[`${Constants.EXTENSIONID}/pausedAt`] as string;
 
     const selfitem = document.createElement('li');
     selfitem.id = `pl_${SELFID}`;
@@ -138,11 +140,8 @@ OBR.onReady(async () =>
         }
     }
 
-    function startCountdown(minutes: number)
+    function startCountdown(totalSeconds: number)
     {
-        // Calculate total seconds from minutes
-        let totalSeconds = minutes * 60;
-
         // Update timer initially
         updateTimer(totalSeconds);
 
@@ -175,10 +174,15 @@ OBR.onReady(async () =>
         BREAKTIMER.innerText = formattedTime;
     }
 
-    // Example: Start a countdown timer for 5 minutes
-    if (breaktime > 0)
+    const currentTime = new Date(await FetchUtcTime());
+    const oldTime = new Date(pausedAt);
+
+    const elapsedSeconds = Math.round((currentTime.getTime() - oldTime.getTime()) / 1000);
+    const timer = breaktime * 60;
+    const timeLeft = timer - elapsedSeconds;
+    if (timeLeft > 0)
     {
-        startCountdown(breaktime);
+        startCountdown(timeLeft);
     }
     else
     {

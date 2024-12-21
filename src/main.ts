@@ -6,6 +6,7 @@ import './style.css'
 import * as Utilities from './utilities/bsUtilities';
 import { BSCACHE } from './utilities/bsSceneCache';
 import { Constants } from './utilities/bsConstants';
+import { FetchUtcTime } from './utilities/bsWorldTime.js';
 
 OBR.onReady(async () =>
 {
@@ -29,6 +30,7 @@ class ShortRest
 {
     baseHeight = 420;
     paused = false;
+    pausedAt = "";
     obscure = false;
     game = false;
     selfReady: boolean;
@@ -56,6 +58,7 @@ class ShortRest
     public RetrieveSettings()
     {
         this.paused = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/paused`] as boolean ?? false;
+        this.pausedAt = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/pausedAt`] as string ?? '';
         this.obscure = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/obscure`] as boolean ?? false;
         this.game = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/game`] as boolean ?? false;
     }
@@ -114,10 +117,16 @@ class ShortRest
         this.PAUSEBUTTON.innerHTML = this.paused ? "Resume</br>Game" : "Pause</br>Game";
         if (this.paused)
         {
-            const timer = parseInt(this.BREAKLENGTHBUTTON.value);
-            if (timer > 0)
+            const currentTime = new Date(await FetchUtcTime());
+            const oldTime = new Date(this.pausedAt);
+
+            const elapsedSeconds = Math.round((currentTime.getTime() - oldTime.getTime()) / 1000);
+
+            const timer = parseInt(this.BREAKLENGTHBUTTON.value) * 60;
+            const timeLeft = timer - elapsedSeconds;
+            if (timeLeft > 0)
             {
-                this.StartCountdown(timer);
+                this.StartCountdown(timeLeft);
             }
             else
             {
@@ -157,10 +166,15 @@ class ShortRest
             this.HIDEVIEWBUTTON.disabled = this.paused;
             this.GAMEVIEWBUTTON.disabled = this.paused;
             this.BREAKLENGTHBUTTON.disabled = this.paused;
-            OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/paused`]: this.paused ? true : false });
+
+            const pausedAt = await FetchUtcTime();
+            OBR.room.setMetadata({
+                [`${Constants.EXTENSIONID}/paused`]: this.paused ? true : false,
+                [`${Constants.EXTENSIONID}/pausedAt`]: pausedAt,
+            });
             if (this.paused)
             {
-                const timer = parseInt(this.BREAKLENGTHBUTTON.value);
+                const timer = parseInt(this.BREAKLENGTHBUTTON.value) * 60;
                 if (timer > 0)
                 {
                     this.StartCountdown(timer);
@@ -250,11 +264,8 @@ class ShortRest
         }
     }
 
-    public StartCountdown(minutes: number)
+    public StartCountdown(totalSeconds: number)
     {
-        // Calculate total seconds from minutes
-        let totalSeconds = minutes * 60;
-
         // Update timer initially
         this.UpdateTimer(totalSeconds);
 
