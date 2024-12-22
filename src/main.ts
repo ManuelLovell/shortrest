@@ -77,7 +77,8 @@ class ShortRest
         this.MESSAGETEXT = document.getElementById('MessageTextarea') as HTMLTextAreaElement;
         this.BODYELEMENT = document.getElementById('bodyElement') as HTMLElement;
 
-        this.BREAKLENGTHBUTTON.value = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string ?? "0";
+        const retrievedTimer = BSCACHE.roomMetadata[`${Constants.EXTENSIONID}/time`] as string;
+        this.BREAKLENGTHBUTTON.value = (parseInt(retrievedTimer) > 0) ? retrievedTimer : "0";
 
         const selfitem = document.createElement('li');
         selfitem.id = `pl_${BSCACHE.playerId}`;
@@ -224,10 +225,14 @@ class ShortRest
         this.BREAKLENGTHBUTTON.oninput = async () =>
         {
             this.BREAKLENGTHBUTTON.value = this.BREAKLENGTHBUTTON.value.slice(0, 2);
+            if (!this.BREAKLENGTHBUTTON.value)
+                this.BREAKLENGTHBUTTON.value = "0";
         };
         this.BREAKLENGTHBUTTON.onblur = async () =>
         {
             const time = this.BREAKLENGTHBUTTON.value ?? 0;
+            if (this.BREAKLENGTHBUTTON.value !== time)
+                this.BREAKLENGTHBUTTON.value = time;
             OBR.room.setMetadata({ [`${Constants.EXTENSIONID}/time`]: time });
         };
 
