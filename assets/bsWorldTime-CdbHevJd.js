@@ -70,4 +70,4 @@
             </tr>
         </table>
     </div>
-`}async function Xs(){const a="https://worldtimeapi.org/api/timezone/Etc/UTC";try{const t=await fetch(a);if(!t.ok)throw new Error(`HTTP error! Status: ${t.status}`);return(await t.json()).utc_datetime}catch(t){throw console.error("Failed to fetch UTC time:",t),t}}export{Er as $,Qs as C,Xs as F,Ks as O};
+`}async function Xs(){const a="https://timeapi.io/api/Time/current/zone?timeZone=UTC";try{const t=await fetch(a);if(!t.ok)throw new Error(`HTTP error! Status: ${t.status}`);return(await t.json()).dateTime}catch(t){throw console.error("Failed to fetch UTC time:",t),t}}export{Er as $,Qs as C,Xs as F,Ks as O};
