@@ -1,6 +1,6 @@
 export async function FetchUtcTime(): Promise<string>
 {
-    const url = "https://worldtimeapi.org/api/timezone/Etc/UTC";
+    const url = "https://timeapi.io/api/Time/current/zone?timeZone=UTC";
 
     try
     {
@@ -14,7 +14,7 @@ export async function FetchUtcTime(): Promise<string>
         const data: WorldTimeApiResponse = await response.json();
 
         // Extract and return the UTC datetime
-        return data.utc_datetime;
+        return data.dateTime;
     } catch (error)
     {
         console.error("Failed to fetch UTC time:", error);

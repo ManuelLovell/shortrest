@@ -1,15 +1,16 @@
 interface WorldTimeApiResponse
 {
-    abbreviation: string;
-    datetime: string;
-    day_of_week: number;
-    day_of_year: number;
-    dst: boolean;
-    dst_offset: number;
-    raw_offset: number;
-    timezone: string;
-    unixtime: number;
-    utc_datetime: string;
-    utc_offset: string;
-    week_number: number;
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    seconds: number;
+    milliSeconds: number;
+    dateTime: string; // ISO 8601 format datetime string
+    date: string; // MM/DD/YYYY format
+    time: string; // HH:mm format
+    timeZone: string; // e.g., "UTC"
+    dayOfWeek: string; // Full day name, e.g., "Wednesday"
+    dstActive: boolean; // Daylight Saving Time active status
 }
