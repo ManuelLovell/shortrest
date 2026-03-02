@@ -202,7 +202,7 @@ class BSCache {
                     this.roomMetadata = metadata;
                     if (this.playerRole === 'PLAYER') {
                         if (metadata[`${Constants.EXTENSIONID}/paused`] === true
-                            && this.paused === false) {
+                            && this.paused !== true) {
                             this.paused = true;
                             await OBR.modal.open({
                                 id: Constants.PAUSEID,
@@ -213,7 +213,7 @@ class BSCache {
                                 disablePointerEvents: false,
                             });
                         }
-                        else if (metadata[`${Constants.EXTENSIONID}/paused`] === false
+                        else if (metadata[`${Constants.EXTENSIONID}/paused`] !== true
                             && this.paused === true) {
                             this.paused = false;
                             await OBR.modal.close(Constants.PAUSEID);
