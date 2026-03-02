@@ -13,8 +13,6 @@ OBR.onReady(async () =>
     BSCACHE.InitializeSupabase();
     await BSCACHE.InitializeCache();
     BSCACHE.SetupHandlers();
-console.log("VITE_SUPABASE_URL defined:", Boolean(import.meta.env.VITE_SUPABASE_URL))
-console.log("VITE_SUPABASE_ANON_KEY defined:", Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY))
     if (BSCACHE.playerRole === "PLAYER")
     {
         await SHORTREST.InitiatePlayer();
