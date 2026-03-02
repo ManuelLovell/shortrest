@@ -1,23 +1,30 @@
-export async function FetchUtcTime(): Promise<string>
-{
-    const url = "https://timeapi.io/api/Time/current/zone?timeZone=UTC";
+import { SupabaseClient } from "@supabase/supabase-js"
 
-    try
-    {
-        const response = await fetch(url);
-        if (!response.ok)
-        {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+type BattleTimeResponse = {
+    ok: boolean
+    iso: string
+    unix_ms: number
+    unix_s: number
+}
 
-        // Parse JSON response
-        const data: WorldTimeApiResponse = await response.json();
+export async function FetchUtcTime(client: SupabaseClient<unknown, {
+    PostgrestVersion: string;
+}, never, never, {
+    PostgrestVersion: string;
+}>): Promise<string> {
+    const { data, error } = await client.functions.invoke<BattleTimeResponse>(
+        "battle-time",
+        { method: "GET" },
+    )
 
-        // Extract and return the UTC datetime
-        return data.dateTime;
-    } catch (error)
-    {
-        console.error("Failed to fetch UTC time:", error);
-        throw error; // Optionally rethrow for further handling
+    if (error) {
+        console.error("Failed to fetch UTC time:", error)
+        throw error
     }
+
+    if (!data?.iso) {
+        throw new Error("battle-time returned no iso field")
+    }
+
+    return data.iso
 }

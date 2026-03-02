@@ -5,6 +5,7 @@ import $ from "jquery";
 import OBR, { Player } from '@owlbear-rodeo/sdk';
 import { Constants } from './utilities/bsConstants.js';
 import { FetchUtcTime } from './utilities/bsWorldTime.js';
+import { createClient } from '@supabase/supabase-js/dist/index.cjs';
 
 document.querySelector<HTMLDivElement>('#pauseScreen')!.innerHTML = `
 <div id="gameFlexBox">
@@ -42,11 +43,14 @@ const PLAYERLISTING = document.getElementById('playerList') as HTMLUListElement;
 const BREAKTIMER = document.getElementById('breakTimer') as HTMLDivElement;
 const MESSAGEAREA = document.getElementById('breakMessage') as HTMLDivElement;
 
-OBR.onReady(async () =>
-{
+OBR.onReady(async () => {
     // Setup Self
     SELFID = await OBR.player.getId();
     const roomData = await OBR.room.getMetadata();
+    const supaBase: ReturnType<typeof createClient> = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY,
+    );
 
     const gameenabled = roomData[`${Constants.EXTENSIONID}/game`] as boolean;
     const breaktime = roomData[`${Constants.EXTENSIONID}/time`] as number;
@@ -60,14 +64,12 @@ OBR.onReady(async () =>
 
     PLAYERLIST = await OBR.party.getPlayers();
     RefreshPlayerList();
-    OBR.party.onChange((players) =>
-    {
+    OBR.party.onChange((players) => {
         PLAYERLIST = players;
         RefreshPlayerList();
     });
 
-    selfitem.onclick = async (e) =>
-    {
+    selfitem.onclick = async (e) => {
         e.preventDefault();
         SELFREADY = !SELFREADY;
         selfitem.style.backgroundImage = SELFREADY ? 'url(/check.svg)' : 'url(/cross.svg)';
@@ -76,61 +78,48 @@ OBR.onReady(async () =>
     }
 
     // Sample: await OBR.broadcast.sendMessage(Constants.TRANSPORT, "Hello!");
-    OBR.broadcast.onMessage(Constants.TRANSPORT, async (event: Broadcast) =>
-    {
+    OBR.broadcast.onMessage(Constants.TRANSPORT, async (event: Broadcast) => {
         const connection = event.connectionId;
         const player = PLAYERLIST.find(x => x.connectionId === connection);
-        if (player)
-        {
+        if (player) {
             const listItemId = `pl_${player.id}`;
             const listItem = document.getElementById(listItemId);
-            if (listItem)
-            {
+            if (listItem) {
                 listItem.style.backgroundImage = event.data === Constants.READY ? 'url(/check.svg)' : 'url(/cross.svg)';
             }
         }
     });
 
-    OBR.broadcast.onMessage(Constants.SCORE, async (event: Broadcast) =>
-    {
+    OBR.broadcast.onMessage(Constants.SCORE, async (event: Broadcast) => {
         const listItemId = `con_${event.connectionId}`;
         const listItem = document.getElementById(listItemId);
-        if (listItem)
-        {
+        if (listItem) {
             listItem.innerText = `Score: ${event.data}`;
         }
     });
 
-    OBR.broadcast.onMessage(Constants.MESSAGE, async (event: Broadcast) =>
-    {
-        if (event.data)
-        {
+    OBR.broadcast.onMessage(Constants.MESSAGE, async (event: Broadcast) => {
+        if (event.data) {
             MESSAGEAREA.innerText = event.data;
             MESSAGEAREA.style.display = 'block';
         }
     });
 
     /** Function to refresh the player list */
-    function RefreshPlayerList()
-    {
+    function RefreshPlayerList() {
         const listItems = PLAYERLISTING.querySelectorAll('li');
-        for (const listitem of listItems)
-        {
+        for (const listitem of listItems) {
             const id = listitem.id.split('_')[1];
-            if (!PLAYERLIST.some(player => player.id === id))
-            {
-                if (id !== SELFID)
-                {
+            if (!PLAYERLIST.some(player => player.id === id)) {
+                if (id !== SELFID) {
                     listitem.remove();
                 }
             }
         }
 
-        for (const player of PLAYERLIST)
-        {
+        for (const player of PLAYERLIST) {
             const existingitem = document.getElementById(`pl_${player.id}`);
-            if (!existingitem)
-            {
+            if (!existingitem) {
                 const playeritem = document.createElement('li');
                 playeritem.id = `pl_${player.id}`;
                 playeritem.classList.add("player-list-item");
@@ -140,29 +129,24 @@ OBR.onReady(async () =>
         }
     }
 
-    function startCountdown(totalSeconds: number)
-    {
+    function startCountdown(totalSeconds: number) {
         // Update timer initially
         updateTimer(totalSeconds);
 
-        // Update timer every second
-        const intervalId = setInterval(() =>
-        {
+        // Update timer every secondF
+        const intervalId = setInterval(() => {
             totalSeconds--;
-            if (totalSeconds <= 0)
-            {
+            if (totalSeconds <= 0) {
                 clearInterval(intervalId);
                 BREAKTIMER.innerText = 'Time is up!';
-            } else
-            {
+            } else {
                 updateTimer(totalSeconds);
             }
         }, 1000);
     }
 
     // Function to update the timer display
-    function updateTimer(totalSeconds: number)
-    {
+    function updateTimer(totalSeconds: number) {
         // Calculate minutes and seconds
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
@@ -174,23 +158,20 @@ OBR.onReady(async () =>
         BREAKTIMER.innerText = formattedTime;
     }
 
-    const currentTime = new Date(await FetchUtcTime());
+    const currentTime = new Date(await FetchUtcTime(supaBase as any));
     const oldTime = new Date(pausedAt);
 
     const elapsedSeconds = Math.round((currentTime.getTime() - oldTime.getTime()) / 1000);
     const timer = breaktime * 60;
     const timeLeft = timer - elapsedSeconds;
-    if (timeLeft > 0)
-    {
+    if (timeLeft > 0) {
         startCountdown(timeLeft);
     }
-    else
-    {
+    else {
         BREAKTIMER.style.display = "none";
     }
 
-    if (gameenabled)
-    {
+    if (gameenabled) {
         $('.block-game').blockrain({
             autoplay: false,
             autoplayRestart: false,
@@ -200,19 +181,16 @@ OBR.onReady(async () =>
             gameOverText: 'Game Over',
             restartButtonText: 'Play Again',
             scoreText: 'Score',
-            onStart: async function ()
-            {
+            onStart: async function () {
                 await OBR.broadcast.sendMessage(Constants.SCORE, 0);
             },
             onRestart: function () { },
-            onLine: async function (_lines: string, _scoreIncrement: string, score: string)
-            {
+            onLine: async function (_lines: string, _scoreIncrement: string, score: string) {
                 await OBR.broadcast.sendMessage(Constants.SCORE, score);
             }
         });
     }
-    else
-    {
+    else {
         document.getElementById('blockGameContainer')!.style.display = "none";
         document.getElementById('blockGameControls')!.style.display = "none";
     }

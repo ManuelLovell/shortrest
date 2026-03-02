@@ -7,8 +7,8 @@ export function GetPatreonButton()
     newImgElement.id = "PatreonButton";
     newImgElement.setAttribute('class', 'icon');
     newImgElement.classList.add('patreon-clickable');
-    newImgElement.setAttribute('title', BSCACHE.USER_REGISTERED ? 'Thanks for subscribing!' : 'Get the news on updates on the Battle-System Patreon');
-    newImgElement.setAttribute('src', BSCACHE.USER_REGISTERED ? '/w-thankyou.svg' : '/w-patreon-2.png');
+    newImgElement.setAttribute('title', 'Get the news on updates on the Battle-System Patreon');
+    newImgElement.setAttribute('src', '/w-patreon-2.png');
     newImgElement.onclick = async function (e)
     {
         e.preventDefault();
@@ -66,7 +66,7 @@ export function HexToRgba(hex: string, alpha: number): string
 
 export function Debounce(func: () => any, delay: number): () => void
 {
-    let timeoutId: number;
+    let timeoutId: NodeJS.Timeout;
 
     return function debounced(): void
     {

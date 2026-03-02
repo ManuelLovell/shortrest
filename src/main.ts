@@ -10,9 +10,11 @@ import { FetchUtcTime } from './utilities/bsWorldTime.js';
 
 OBR.onReady(async () =>
 {
+    BSCACHE.InitializeSupabase();
     await BSCACHE.InitializeCache();
     BSCACHE.SetupHandlers();
-
+console.log("VITE_SUPABASE_URL defined:", Boolean(import.meta.env.VITE_SUPABASE_URL))
+console.log("VITE_SUPABASE_ANON_KEY defined:", Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY))
     if (BSCACHE.playerRole === "PLAYER")
     {
         await SHORTREST.InitiatePlayer();
@@ -34,7 +36,7 @@ class ShortRest
     obscure = false;
     game = false;
     selfReady: boolean;
-    timerId: number;
+    timerId: NodeJS.Timeout | number;
     version: string;
 
     MAINAPP = document.getElementById('app') as HTMLDivElement;
@@ -118,7 +120,7 @@ class ShortRest
         this.PAUSEBUTTON.innerHTML = this.paused ? "Resume</br>Game" : "Pause</br>Game";
         if (this.paused)
         {
-            const currentTime = new Date(await FetchUtcTime());
+            const currentTime = new Date(await FetchUtcTime(BSCACHE.supaBase));
             const oldTime = new Date(this.pausedAt);
 
             const elapsedSeconds = Math.round((currentTime.getTime() - oldTime.getTime()) / 1000);
@@ -168,7 +170,7 @@ class ShortRest
             this.GAMEVIEWBUTTON.disabled = this.paused;
             this.BREAKLENGTHBUTTON.disabled = this.paused;
 
-            const pausedAt = await FetchUtcTime();
+            const pausedAt = await FetchUtcTime(BSCACHE.supaBase);
             OBR.room.setMetadata({
                 [`${Constants.EXTENSIONID}/paused`]: this.paused ? true : false,
                 [`${Constants.EXTENSIONID}/pausedAt`]: pausedAt,
