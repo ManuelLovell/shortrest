@@ -95,7 +95,12 @@ class BSCache {
         // Always Cache
         this.sceneReady = await OBR.scene.isReady();
         this.theme = await OBR.theme.getTheme();
-        Utilities.SetThemeMode(this.theme, document);
+        try {
+            Utilities.SetThemeMode(this.theme, document);
+        } catch (error) {
+            // Whatever. Theme didn't set.
+        }
+
 
         if (this.caches.includes(BSCache.PLAYER)) {
             this.playerId = await OBR.player.getId();
